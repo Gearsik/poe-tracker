@@ -1,0 +1,44 @@
+version: '3'
+services:
+    poe-tracker-postgres-db
+        image: postgres:latest
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_USER: gears
+            - POSTGRES_PASSWORD: gearssecond
+            - POSTGRES_DB: poe_tracker_db
+        volumes:
+            - poe_tracker_postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U gears -d poe_tracker_db"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+
+    poe-tracker-fetcher
+        build: .
+        environment:
+            - DB_HOST: poe-tracker-postgres-db
+            - DB_PORT: 5432
+            - DB_USER: gears
+            - DB_PASSWORD: gearssecond
+            - DB_NAME: poe_tracker_db
+        depends_on:
+            poe-tracker-postgres-db:
+                condition: service_healthy
+        restart: unless-stopped
+
+    poe-tracker-grafana
+        image: grafana/grafana:latest
+        ports:
+            - "3000:3000"
+        volumes:
+            - poe-tracker-grafana-data:/var/lib/grafana
+        depends_on:
+            poe-tracker-postgres-db:
+                condition: service_healthy
+volumes:
+    poe_tracker_postgres_data:
+    poe-tracker-grafana-data:
