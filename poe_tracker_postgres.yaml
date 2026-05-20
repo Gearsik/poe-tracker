@@ -17,6 +17,16 @@ services:
             retries: 5
             start_period: 10s
 
+    pgadmin:
+        image: dpage/pgadmin4
+        environment: 
+            PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+            PGADMIN_DEFAULT_PASSWORD: admin
+        ports:
+            - "5050:80"
+        depends_on:
+            - db
+
     fetcher:
         build: .
         container_name: poe-tracker-fetcher
