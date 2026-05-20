@@ -1,6 +1,7 @@
 import requests
 import psycopg
-from datetime import datetime 
+from datetime import datetime
+
 #requests is just a module allowing the script to work with HTTP/HTTPS
 #used to assign date and time values to the data recieved for database purposes, 
 #psycog needed for connecting python and postgresSQL
