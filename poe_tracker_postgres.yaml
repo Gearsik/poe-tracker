@@ -4,9 +4,9 @@ services:
         image: postgres:latest
         container_name: poe-tracker-postgres
         environment:
-            - POSTGRES_USER: gears
-            - POSTGRES_PASSWORD: gearssecond
-            - POSTGRES_DB: poe_tracker_db
+            POSTGRES_USER: gears
+            POSTGRES_PASSWORD: gearssecond
+            POSTGRES_DB: poe_tracker_db
         ports:
             - "5432:5432"
         #volumes:
@@ -26,12 +26,12 @@ services:
             db:
                 condition: service_healthy
         environment:
-            - DB_HOST: db
-            - DB_PORT: 5432
-            - DB_NAME: poe_tracker_db
-            - DB_USER: gears
-            - DB_PASSWORD: gearssecond
-            - POE_LEAGUE: Fate+of+the+Vaal
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_NAME: poe_tracker_db
+            DB_USER: gears
+            DB_PASSWORD: gearssecond
+            POE_LEAGUE: Fate+of+the+Vaal
 
     grafana:
         image: grafana/grafana:latest
