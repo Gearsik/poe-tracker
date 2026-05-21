@@ -1,8 +1,8 @@
-import psycopg
+import psycopg2
 from poe_db_config import DB_CONFIG
 
 def get_connection():
-    return psycopg.connect(DB_CONFIG)
+    return psycopg2.connect(DB_CONFIG)
 
 def create_table():
     with get_connection() as conn:

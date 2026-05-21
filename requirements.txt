@@ -1,4 +1,4 @@
 requests
-psycopg
+psycopg2-binary
 python-dotenv
 schedule
