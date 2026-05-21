@@ -13,6 +13,6 @@ def create_table():
                         currency_id TEXT NOT NULL,
                         currency_name TEXT,
                         chaos_value NUMERIC NOT NULL,
-                        fetched_at TIMESTAMPZ DEFAULT NOW()
+                        fetched_at TIMESTAMPTZ DEFAULT NOW()
                     );
             """)
