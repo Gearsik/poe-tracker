@@ -8,7 +8,7 @@ def create_table():
     with get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                    CREATE TABLE IF NOT EXIST poe_currency (
+                    CREATE TABLE IF NOT EXISTS poe_currency (
                         id SERIAL PRIMARY KEY,
                         currency_id TEXT NOT NULL,
                         currency_name TEXT,
