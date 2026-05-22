@@ -1,5 +1,6 @@
 import requests
 import sys
+import traceback
 from datetime import datetime
 from poe_database import get_connection
 from poe_db_config import poe_api
@@ -41,8 +42,27 @@ def fetch_and_store_currency():
                 print(f"Successfully inserted/updated {inserted} currencies at {datetime.now()}", file=sys.stderr)
 
     except requests.exceptions.RequestException as e:
-        print(f"Network error fetching POE data {e}", file=sys.stdeer)
+        print(f"Network error fetching POE data {e}", file=sys.stderr)
     except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stdeer)
-        import traceback
-        traceback.print_exc(file=sys.stdeer)
+        print(f"Unexpected error: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+
+def create_table_if_not_exists():
+    print("Creating poe_currency table if it doesn't exist...", file=sys.stderr)
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS poe_currency (
+                        id SERIAL PRIMARY KEY,
+                        currency_id TEXT UNIQUE NOT NULL,
+                        currency_name TEXT NOT NULL,
+                        chaos_value NUMERIC,
+                        updated_at TIMESTAMPTZ DEFAULT NOW()
+                    );
+                """)
+                conn.commit()
+                print("Table poe_currency is ready.", file=sys.stderr)
+    except Exception as e:
+        print(f"Failed to create table: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
