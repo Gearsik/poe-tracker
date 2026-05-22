@@ -15,9 +15,9 @@ print("Running INITIAL fetch...", file=sys.stderr)
 try:
     create_table_if_not_exists()
     fetch_and_store_currency()
-    print("✅ Initial fetch completed successfully!", file=sys.stderr)
+    print("Initial fetch completed successfully!", file=sys.stderr)
 except Exception as e:
-    print(f"❌ ERROR during initial fetch: {e}", file=sys.stderr)
+    print(f"ERROR during initial fetch: {e}", file=sys.stderr)
     traceback.print_exc(file=sys.stderr)
 
 print("Entering scheduler loop...", file=sys.stderr)
@@ -27,6 +27,6 @@ while True:
         schedule.run_pending()
         time.sleep(10)
     except Exception as e:
-        print(f"❌ Error in scheduler: {e}", file=sys.stderr)
+        print(f"Error in scheduler: {e}", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         time.sleep(10)
