@@ -30,7 +30,6 @@ services:
     fetcher:
         build: .
         container_name: poe-tracker-fetcher
-        restart: unless-stopped
         depends_on:
             db:
                 condition: service_healthy
@@ -41,6 +40,15 @@ services:
             DB_USER: gears
             DB_PASSWORD: gearssecond
             POE_LEAGUE: Fate+of+the+Vaal
+        command: python -c "
+            import time
+            print('Fetcher container started successfully!')
+            print('Waiting 10 seconds...')
+            time.sleep(10)
+            print('Still alive...')
+            while True: time.sleep(30)
+            "
+        restart: unless-stopped
 
     grafana:
         image: grafana/grafana:latest
