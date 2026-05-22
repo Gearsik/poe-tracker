@@ -30,14 +30,12 @@ def fetch_and_store_currency():
 
                     if currency_id and name and value is not None:
                         cur.execute("""
-                            INSERT INTO poe_currency
-                            (currency_id, currency_name, chaos_value)
-                            VALUES (%s, %s, %s)
-                            ON CONFLICT (currency_id) DO UPDATE
-                            SET chaos_value = EXCLUDED.chaos_value,
-                                    updated_at = NOW()
+                            INSERT INTO poe_currency_history
+                            (currency_id, currency_name, chaos_value, fetched_at)
+                            VALUES (%s, %s, %s, NOW())
                         """, (currency_id, name, value))
                         inserted += 1
+
                 conn.commit()
                 print(f"Successfully inserted/updated {inserted} currencies at {datetime.now()}", file=sys.stderr)
 
@@ -53,12 +51,12 @@ def create_table_if_not_exists():
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute("""
-                    CREATE TABLE IF NOT EXISTS poe_currency (
+                    CREATE TABLE IF NOT EXISTS poe_currency_history (
                         id SERIAL PRIMARY KEY,
                         currency_id TEXT UNIQUE NOT NULL,
                         currency_name TEXT NOT NULL,
                         chaos_value NUMERIC,
-                        updated_at TIMESTAMPTZ DEFAULT NOW()
+                        fetched_at TIMESTAMPTZ DEFAULT NOW()
                     );
                 """)
                 conn.commit()
