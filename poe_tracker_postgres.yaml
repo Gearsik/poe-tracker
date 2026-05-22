@@ -46,7 +46,6 @@ services:
             print('Waiting 10 seconds...')
             time.sleep(10)
             print('Still alive...')
-            while True: time.sleep(30)
             "
         restart: unless-stopped
 
