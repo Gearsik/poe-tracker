@@ -1,6 +1,6 @@
 services:
     db:
-        image: postgres:latest
+        image: postgres:16
         container_name: poe-tracker-postgres
         environment:
             POSTGRES_USER: gears
