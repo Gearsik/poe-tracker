@@ -3,8 +3,8 @@ services:
         image: postgres:latest
         container_name: poe-tracker-postgres
         environment:
-            POSTGRES_USER: admin
-            POSTGRES_PASSWORD: admin
+            POSTGRES_USER: gears
+            POSTGRES_PASSWORD: gearssecond
             POSTGRES_DB: poe_tracker_db
         ports:
             - "5432:5432"
@@ -37,8 +37,8 @@ services:
             DB_HOST: db
             DB_PORT: 5432
             DB_NAME: poe_tracker_db
-            DB_USER: admin
-            DB_PASSWORD: admin
+            DB_USER: gears
+            DB_PASSWORD: gearssecond
             POE_LEAGUE: Fate+of+the+Vaal
         restart: unless-stopped
 
