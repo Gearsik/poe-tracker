@@ -9,7 +9,7 @@ from poe_fetcher import fetch_and_store_currency, create_table_if_not_exists
 print("=== FETCHER CONTAINER STARTED ===", file=sys.stderr)
 print(f"Python version: {sys.version}", file=sys.stderr)
 
-schedule.every(60).minutes.do(fetch_and_store_currency)
+schedule.every(30).minutes.do(fetch_and_store_currency)
 
 print("Running INITIAL fetch...", file=sys.stderr)
 try:

@@ -53,9 +53,9 @@ def create_table_if_not_exists():
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS poe_currency_history (
                         id SERIAL PRIMARY KEY,
-                        currency_id TEXT UNIQUE NOT NULL,
+                        currency_id TEXT NOT NULL,
                         currency_name TEXT NOT NULL,
-                        chaos_value NUMERIC,
+                        chaos_value NUMERIC NOT NULL,
                         fetched_at TIMESTAMPTZ DEFAULT NOW()
                     );
                 """)
