@@ -58,12 +58,15 @@ services:
         container_name: poe-tracker-grafana
 
         ports:
-            - "4000:3000"
+            - "127.0.0.1:4000:3000"
 
         environment:
             DB_NAME: ${DB_NAME}
             DB_USER: ${DB_USER}
             DB_PASSWORD: ${DB_PASSWORD}
+
+            GF_SERVER_ROOT_URL: https://178.105.59.4/poe/
+            GF_SERVER_SERVE_FROM_SUB_PATH: "true"
 
         volumes:
             - grafana-data:/var/lib/grafana
