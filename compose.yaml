@@ -54,7 +54,7 @@ services:
         restart: unless-stopped
 
     grafana:
-        image: Grafana 13.0.1+security-01
+        image: grafana 13.0.1+security-01
         container_name: poe-tracker-grafana
 
         ports:
