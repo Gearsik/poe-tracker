@@ -12,7 +12,7 @@ services:
            - postgres_data:/var/lib/postgresql/data
 
         healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
             interval: 10s
             timeout: 5s
             retries: 5
@@ -27,9 +27,10 @@ services:
         environment: 
             PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
             PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+            PGADMIN_REPLACE_SERVERS_ON_STARTUP: 'True'
 
         ports:
-            - "127.0.0.1:5050:80"
+            - '127.0.0.1:5050:80'
         
         depends_on:
             db:
@@ -59,7 +60,7 @@ services:
         container_name: poe-tracker-grafana
 
         ports:
-            - "127.0.0.1:4000:3000"
+            - '127.0.0.1:4000:3000'
 
         environment:
             DB_NAME: ${DB_NAME}
@@ -83,3 +84,4 @@ services:
 volumes:
     postgres_data:
     grafana-data:
+    pgadmin-data:
