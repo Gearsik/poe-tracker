@@ -5,17 +5,19 @@ import traceback
 
 # Change this import if your fetch function is named differently
 from poe_database import create_table_if_not_exists
-from poe_fetcher import fetch_and_store_currency
+from poe_fetcher import fetch_all_games
+from poe_db_config import FETCH_INTERVAL_MINUTES
 
 print("=== FETCHER CONTAINER STARTED ===", file=sys.stderr)
 print(f"Python version: {sys.version}", file=sys.stderr)
 
-schedule.every(30).minutes.do(fetch_and_store_currency)
+schedule.every(FETCH_INTERVAL_MINUTES).minutes.do(fetch_all_games)
 
 print("Running INITIAL fetch...", file=sys.stderr)
+
 try:
     create_table_if_not_exists()
-    fetch_and_store_currency()
+    fetch_all_games()
 
     print("Initial fetch completed successfully!", file=sys.stderr)
 

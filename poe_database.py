@@ -10,10 +10,13 @@ def create_table_if_not_exists():
             cur.execute("""
                     CREATE TABLE IF NOT EXISTS poe_currency_history (
                         id SERIAL PRIMARY KEY,
-                        league TEXT NOT NULL,
+                        game TEXT NOT NULL,
+                        league_id TEXT NOT NULL,
+                        league_name TEXT NOT NULL,
                         currency_id TEXT NOT NULL,
-                        currency_name TEXT,
-                        chaos_value NUMERIC NOT NULL,
+                        currency_name TEXT NOT NULL,
+                        primary_value NUMERIC NOT NULL,
+                        primary_currency TEXT NOT NULL,
                         fetched_at TIMESTAMPTZ DEFAULT NOW()
                     );
             """)
