@@ -1,2 +1,6 @@
 .env
-poe_currency_tracker.py
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -3,64 +3,51 @@ import sys
 import traceback
 from datetime import datetime
 from poe_database import get_connection
-from poe_db_config import poe_api
+from poe_db_config import POE_API_URL, POE_API_PARAMS, POE_LEAGUE
+
+def parse_currency_data(poe_data, league):
+    currency_name_lookup = {
+        item.get('id'): item.get('name')
+        for item in poe_data.get('items', [])
+        if item.get('id') and item.get('name')
+    }
+
+    currencies = []
+
+    for currency in poe_data.get('lines', []):
+        currency_id = currency.get('id')
+        name = currency_name_lookup.get(currency_id)
+        value = currency.get('primaryValue')
+
+        if currency_id and name and value is not None:
+            currencies.append(
+                (league, currency_id, name, value)
+            )
+    return currencies
 
 def fetch_and_store_currency():
-    print("Starting fetch_and_currency...", file=sys.stderr)
+    print("Starting currency fetch...", file=sys.stderr)
 
-    try:
-        print(f"Making requests to: {poe_api}", file=sys.stderr)
+    print(f"Making requests to: {POE_API_URL}", file=sys.stderr)
 
-        api_response = requests.get(poe_api, timeout=15)
-        api_response.raise_for_status() 
+    api_response = requests.get(POE_API_URL, params=POE_API_PARAMS, timeout=15)
+    api_response.raise_for_status() 
 
-        print("Recieved response from POE API", file=sys.stderr)
-        poe_data = api_response.json()
+    print("Received response from POE API", file=sys.stderr)
+    poe_data = api_response.json()
 
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                inserted = 0
+    currencies = parse_currency_data(poe_data, POE_LEAGUE)
 
-                currency_name_lookup = {item["id"]: item["name"] for item in poe_data.get("items" , [])}
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            inserted = 0
 
-                for currency in poe_data.get("lines" , []):
-                    currency_id = currency.get("id")
-                    name = currency_name_lookup.get(currency_id)
-                    value = currency.get("primaryValue")
-
-                    if currency_id and name and value is not None:
-                        cur.execute("""
-                            INSERT INTO poe_currency_history
-                            (currency_id, currency_name, chaos_value, fetched_at)
-                            VALUES (%s, %s, %s, NOW())
-                        """, (currency_id, name, value))
-                        inserted += 1
-
-                conn.commit()
-                print(f"Successfully inserted/updated {inserted} currencies at {datetime.now()}", file=sys.stderr)
-
-    except requests.exceptions.RequestException as e:
-        print(f"Network error fetching POE data {e}", file=sys.stderr)
-    except Exception as e:
-        print(f"Unexpected error: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
-
-def create_table_if_not_exists():
-    print("Creating poe_currency table if it doesn't exist...", file=sys.stderr)
-    try:
-        with get_connection() as conn:
-            with conn.cursor() as cur:
+            for league, currency_id, name, value in currencies:
                 cur.execute("""
-                    CREATE TABLE IF NOT EXISTS poe_currency_history (
-                        id SERIAL PRIMARY KEY,
-                        currency_id TEXT NOT NULL,
-                        currency_name TEXT NOT NULL,
-                        chaos_value NUMERIC NOT NULL,
-                        fetched_at TIMESTAMPTZ DEFAULT NOW()
-                    );
-                """)
-                conn.commit()
-                print("Table poe_currency is ready.", file=sys.stderr)
-    except Exception as e:
-        print(f"Failed to create table: {e}", file=sys.stderr)
-        traceback.print_exc(file=sys.stderr)
+                    INSERT INTO poe_currency_history
+                    (league, currency_id, currency_name, chaos_value)
+                    VALUES (%s, %s, %s, %s)
+                """, (league, currency_id, name, value))
+                inserted += 1
+
+    print(f"Successfully inserted {inserted} currencies at {datetime.now()}", file=sys.stderr)

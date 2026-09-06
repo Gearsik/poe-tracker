@@ -2,14 +2,15 @@ services:
     db:
         image: postgres:16
         container_name: poe-tracker-postgres
+
         environment:
-            POSTGRES_USER: gears
-            POSTGRES_PASSWORD: gearssecond
-            POSTGRES_DB: poe_tracker_db
-        ports:
-            - "5432:5432"
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: ${DB_NAME}
+
         volumes:
            - postgres_data:/var/lib/postgresql/data
+
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U gears -d poe_tracker_db"]
             interval: 10s
@@ -19,39 +20,53 @@ services:
 
     pgadmin:
         image: dpage/pgadmin4
+
+        profiles:
+            - tools
+
         environment: 
-            PGADMIN_DEFAULT_EMAIL: admin@gmail.com
-            PGADMIN_DEFAULT_PASSWORD: admin
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+
         ports:
-            - "5050:80"
+            - "127.0.0.1:5050:80"
+        
         depends_on:
-            - db
+            - db:
+                condition: service_healthy
 
     fetcher:
         build: .
         container_name: poe-tracker-fetcher
+
         depends_on:
             db:
                 condition: service_healthy
+
         environment:
-            DB_HOST: db
-            DB_PORT: 5432
-            DB_NAME: poe_tracker_db
-            DB_USER: gears
-            DB_PASSWORD: gearssecond
-            POE_LEAGUE: Fate+of+the+Vaal
+            DB_HOST: ${DB_HOST}
+            DB_PORT: ${DB_PORT}
+            DB_NAME: ${DB_NAME}
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+            POE_LEAGUE: ${POE_LEAGUE}
+
         restart: unless-stopped
 
     grafana:
         image: grafana/grafana:latest
         container_name: poe-tracker-grafana
+
         ports:
             - "3000:3000"
+
         volumes:
             - grafana-data:/var/lib/grafana
+
         depends_on:
             db:
                 condition: service_healthy
+
 volumes:
     postgres_data:
     grafana-data:
