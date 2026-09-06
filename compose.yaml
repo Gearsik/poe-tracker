@@ -60,12 +60,19 @@ services:
         ports:
             - "4000:3000"
 
+        environment:
+            DB_NAME: ${DB_NAME}
+            DB_USER: ${DB_USER}
+            DB_PASSWORD: ${DB_PASSWORD}
+
         volumes:
             - grafana-data:/var/lib/grafana
+            - ./grafana/provisioning:/etc/grafana/provisioning:ro
 
         depends_on:
             db:
                 condition: service_healthy
+        
 
 volumes:
     postgres_data:
