@@ -58,7 +58,7 @@ services:
         container_name: poe-tracker-grafana
 
         ports:
-            - "3000:3000"
+            - "4000:3000"
 
         volumes:
             - grafana-data:/var/lib/grafana
