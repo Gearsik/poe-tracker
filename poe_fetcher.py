@@ -26,11 +26,21 @@ def parse_currency_data(poe_data, game, league_id, league_name):
 
     core = poe_data.get('core', {})
 
-    currency_name_lookup = {
-        item.get('id'): item.get('name')
-        for item in core.get('items', [])
-        if item.get('id') and item.get('name')
-    }
+    currency_name_lookup = {}
+
+    for item in core.get('items', []):
+        item_id = item.get('id')
+        name = item.get('name')
+
+        if item_id and name:
+            currency_name_lookup[item_id] = name
+
+    for item in poe_data.get('items', []):
+        item_id = item.get('id')
+        name = item.get('name')
+
+        if item_id and name:
+            currency_name_lookup[item_id] = name
 
     primary_currency = core.get('primary')
 
@@ -40,16 +50,38 @@ def parse_currency_data(poe_data, game, league_id, league_name):
         )
 
     currencies = []
+    missing_names = []
 
     for currency in poe_data.get('lines', []):
         currency_id = currency.get('id')
         name = currency_name_lookup.get(currency_id)
         value = currency.get('primaryValue')
 
-        if currency_id and name and value is not None:
-            currencies.append(
-                (game, league_id, league_name, currency_id, name, value, primary_currency)
+        if not currency_id or value is None:
+            continue
+
+        if not name:
+            missing_names.append(currency_id)
+            continue
+
+        currencies.append(
+            (
+                game,
+                league_id,
+                league_name,
+                currency_id,
+                name,
+                value,
+                primary_currency
             )
+        )
+
+    if missing_names:
+        print(
+            f'Skipped {len(missing_names)} currencies with no metadata: '
+            f'{missing_names}',
+            file=sys.stderr
+        )
         
     return currencies
 
