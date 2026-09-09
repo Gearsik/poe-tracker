@@ -1,0 +1,640 @@
+{
+  "apiVersion": "dashboard.grafana.app/v2",
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "adrxbfc",
+    "namespace": "default",
+    "uid": "8b2a10c0-5a09-4154-b0ab-4d499b3aee7d",
+    "resourceVersion": "1788880188771017",
+    "generation": 2,
+    "creationTimestamp": "2026-09-07T00:49:45Z",
+    "labels": {
+      "grafana.app/deprecatedInternalID": "2588986721234944"
+    },
+    "annotations": {
+      "grafana.app/createdBy": "user:dfxhizc4dz4sga",
+      "grafana.app/folder": "",
+      "grafana.app/saved-from-ui": "Grafana v13.0.1+security-01 (9bbe672d)",
+      "grafana.app/updatedBy": "user:dfxhizc4dz4sga",
+      "grafana.app/updatedTimestamp": "2026-09-08T15:09:48Z"
+    }
+  },
+  "spec": {
+    "annotations": [
+      {
+        "kind": "AnnotationQuery",
+        "spec": {
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana",
+            "version": "v0",
+            "datasource": {
+              "name": "-- Grafana --"
+            },
+            "spec": {}
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "builtIn": true
+        }
+      }
+    ],
+    "cursorSync": "Off",
+    "editable": true,
+    "elements": {
+      "panel-1": {
+        "kind": "Panel",
+        "spec": {
+          "id": 1,
+          "title": "Currencies",
+          "description": "Table of all currencies showing their value in the 3 most commonly used currencies",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "poe-postgres"
+                      },
+                      "spec": {
+                        "dataset": "poe_tracker_db",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH current_league AS (\r\n    SELECT league_id\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n    ORDER BY fetched_at DESC\r\n    LIMIT 1\r\n),\r\n\r\nlatest_snapshot AS (\r\n    SELECT MAX(fetched_at) AS fetched_at\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n      AND league_id = (SELECT league_id FROM current_league)\r\n),\r\n\r\nbaseline_snapshot AS (\r\n    SELECT MIN(fetched_at) AS fetched_at\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n      AND league_id = (SELECT league_id FROM current_league)\r\n      AND fetched_at >= now() - INTERVAL '7 days'\r\n),\r\n\r\nsnapshot AS (\r\n    SELECT currency_name, primary_value\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n      AND league_id = (SELECT league_id FROM current_league)\r\n      AND fetched_at = (SELECT fetched_at FROM latest_snapshot)\r\n),\r\n\r\nbaseline AS (\r\n    SELECT currency_name, primary_value\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n      AND league_id = (SELECT league_id FROM current_league)\r\n      AND fetched_at = (SELECT fetched_at FROM baseline_snapshot)\r\n),\r\n\r\nreference_values AS (\r\n    SELECT\r\n        MAX(primary_value) FILTER (WHERE currency_name = 'Divine Orb')  AS divine_value,\r\n        MAX(primary_value) FILTER (WHERE currency_name = 'Exalted Orb') AS exalted_value,\r\n        MAX(primary_value) FILTER (WHERE currency_name = 'Chaos Orb')   AS chaos_value\r\n    FROM snapshot\r\n),\r\n\r\nbaseline_reference AS (\r\n    SELECT MAX(primary_value) FILTER (WHERE currency_name = 'Divine Orb') AS divine_value\r\n    FROM baseline\r\n)\r\n\r\nSELECT\r\n    s.currency_name AS \"Currency\",\r\n\r\n    ROUND(s.primary_value / NULLIF(r.exalted_value, 0), 6) AS \"Exalted Orbs\",\r\n    ROUND(s.primary_value / NULLIF(r.chaos_value, 0), 6)   AS \"Chaos Orbs\",\r\n    ROUND(s.primary_value / NULLIF(r.divine_value, 0), 6)  AS \"Divines\",\r\n\r\n    CASE\r\n        WHEN (SELECT fetched_at FROM baseline_snapshot)\r\n             = (SELECT fetched_at FROM latest_snapshot) THEN NULL\r\n        ELSE ROUND(100 * (\r\n                 (s.primary_value * br.divine_value)\r\n                 / NULLIF(b.primary_value * r.divine_value, 0)\r\n                 - 1\r\n             ), 2)\r\n    END AS \"7d %\"\r\n\r\nFROM snapshot s\r\nCROSS JOIN reference_values r\r\nCROSS JOIN baseline_reference br\r\nLEFT JOIN baseline b ON b.currency_name = s.currency_name\r\n\r\nORDER BY s.primary_value DESC;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "table",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "cellHeight": "sm",
+                "showHeader": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "thresholds"
+                  },
+                  "custom": {
+                    "align": "left",
+                    "cellOptions": {
+                      "type": "auto"
+                    },
+                    "footer": {
+                      "reducers": []
+                    },
+                    "inspect": false
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-2": {
+        "kind": "Panel",
+        "spec": {
+          "id": 2,
+          "title": "Mirror of Kalandra",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "poe-postgres"
+                      },
+                      "spec": {
+                        "dataset": "poe_tracker_db",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "WITH current_league AS (\r\n    SELECT league_id\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n    ORDER BY fetched_at DESC\r\n    LIMIT 1\r\n),\r\nlatest_snapshot AS (\r\n    SELECT MAX(fetched_at) AS fetched_at\r\n    FROM poe_currency_history\r\n    WHERE game = '$game'\r\n      AND league_id = (SELECT league_id FROM current_league)\r\n)\r\nSELECT\r\n    mirror.primary_value / NULLIF(divine.primary_value, 0) AS value\r\nFROM poe_currency_history mirror\r\nJOIN poe_currency_history divine\r\n    ON mirror.game = divine.game\r\n    AND mirror.league_id = divine.league_id\r\n    AND mirror.fetched_at = divine.fetched_at\r\nWHERE mirror.game = '$game'\r\n  AND mirror.league_id = (SELECT league_id FROM current_league)\r\n  AND mirror.fetched_at = (SELECT fetched_at FROM latest_snapshot)\r\n  AND mirror.currency_name = 'Mirror of Kalandra'\r\n  AND divine.currency_name = 'Divine Orb';",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "stat",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "colorMode": "value",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                  "calcs": [
+                    "lastNotNull"
+                  ],
+                  "fields": "",
+                  "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      },
+      "panel-3": {
+        "kind": "Panel",
+        "spec": {
+          "id": 3,
+          "title": "$currency price over time - $game",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "grafana-postgresql-datasource",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "poe-postgres"
+                      },
+                      "spec": {
+                        "dataset": "poe_tracker_db",
+                        "editorMode": "code",
+                        "format": "table",
+                        "rawQuery": true,
+                        "rawSql": "SELECT\r\n    currency.fetched_at AS time,\r\n\r\n    currency.primary_value /\r\n        NULLIF(divine.primary_value, 0)\r\n        AS \"Divines\"\r\n\r\nFROM poe_currency_history currency\r\n\r\nJOIN poe_currency_history divine\r\n    ON divine.game = currency.game\r\n    AND divine.league_id = currency.league_id\r\n    AND divine.fetched_at = currency.fetched_at\r\n    AND divine.currency_name = 'Divine Orb'\r\n\r\nWHERE currency.game = '$game'\r\n  AND currency.league_id = '$league'\r\n  AND currency.currency_name = '$currency'\r\n  AND $__timeFilter(currency.fetched_at)\r\n\r\nORDER BY currency.fetched_at;",
+                        "sql": {
+                          "columns": [
+                            {
+                              "parameters": [],
+                              "type": "function"
+                            }
+                          ],
+                          "groupBy": [
+                            {
+                              "property": {
+                                "type": "string"
+                              },
+                              "type": "groupBy"
+                            }
+                          ],
+                          "limit": 50
+                        }
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.0.1+security-01",
+            "spec": {
+              "options": {
+                "annotations": {
+                  "clustering": -1,
+                  "multiLane": false
+                },
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": false
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "decimals": 3,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineStyle": {
+                      "fill": "solid"
+                    },
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  },
+                  "fieldMinMax": false
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": [
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 18,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-1"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 0,
+              "y": 18,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-3"
+              }
+            }
+          },
+          {
+            "kind": "GridLayoutItem",
+            "spec": {
+              "x": 12,
+              "y": 18,
+              "width": 12,
+              "height": 8,
+              "element": {
+                "kind": "ElementReference",
+                "name": "panel-2"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "links": [],
+    "liveNow": false,
+    "preload": false,
+    "tags": [],
+    "timeSettings": {
+      "timezone": "browser",
+      "from": "now-6h",
+      "to": "now",
+      "autoRefresh": "",
+      "autoRefreshIntervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "hideTimepicker": false,
+      "fiscalYearStartMonth": 0
+    },
+    "title": "poe-tracker",
+    "variables": [
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "game",
+          "current": {
+            "text": "poe2",
+            "value": "poe2"
+          },
+          "label": "Game",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "poe-postgres"
+            },
+            "spec": {
+              "dataset": "poe_tracker_db",
+              "editorMode": "code",
+              "format": "table",
+              "query": "SELECT DISTINCT game\r\nFROM poe_currency_history\r\nORDER BY game;",
+              "rawQuery": true,
+              "rawSql": "SELECT DISTINCT game\r\nFROM poe_currency_history\r\nORDER BY game;",
+              "refId": "SQLVariableQueryEditor-VariableQuery",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "SELECT DISTINCT game\r\nFROM poe_currency_history\r\nORDER BY game;",
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "currency",
+          "current": {
+            "text": "Exalted Orb",
+            "value": "Exalted Orb"
+          },
+          "label": "Name",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "poe-postgres"
+            },
+            "spec": {
+              "dataset": "poe_tracker_db",
+              "editorMode": "code",
+              "format": "table",
+              "query": "SELECT DISTINCT currency_name\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\n  AND league_id = (\r\n      SELECT league_id\r\n      FROM poe_currency_history\r\n      WHERE game = '$game'\r\n      ORDER BY fetched_at DESC\r\n      LIMIT 1\r\n  )\r\nORDER BY currency_name;",
+              "rawQuery": true,
+              "rawSql": "SELECT DISTINCT currency_name\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\n  AND league_id = (\r\n      SELECT league_id\r\n      FROM poe_currency_history\r\n      WHERE game = '$game'\r\n      ORDER BY fetched_at DESC\r\n      LIMIT 1\r\n  )\r\nORDER BY currency_name;",
+              "refId": "SQLVariableQueryEditor-VariableQuery",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "SELECT DISTINCT currency_name\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\n  AND league_id = (\r\n      SELECT league_id\r\n      FROM poe_currency_history\r\n      WHERE game = '$game'\r\n      ORDER BY fetched_at DESC\r\n      LIMIT 1\r\n  )\r\nORDER BY currency_name;",
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": true
+        }
+      },
+      {
+        "kind": "QueryVariable",
+        "spec": {
+          "name": "league",
+          "current": {
+            "text": "Forbidden Rites",
+            "value": "Forbidden Rites"
+          },
+          "label": "League",
+          "hide": "dontHide",
+          "refresh": "onDashboardLoad",
+          "skipUrlSync": false,
+          "query": {
+            "kind": "DataQuery",
+            "group": "grafana-postgresql-datasource",
+            "version": "v0",
+            "datasource": {
+              "name": "poe-postgres"
+            },
+            "spec": {
+              "dataset": "poe_tracker_db",
+              "editorMode": "code",
+              "format": "table",
+              "query": "SELECT\r\n    league_name AS __text,\r\n    league_id AS __value\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\nGROUP BY league_id, league_name\r\nORDER BY MAX(fetched_at) DESC;",
+              "rawQuery": true,
+              "rawSql": "SELECT\r\n    league_name AS __text,\r\n    league_id AS __value\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\nGROUP BY league_id, league_name\r\nORDER BY MAX(fetched_at) DESC;",
+              "refId": "SQLVariableQueryEditor-VariableQuery",
+              "sql": {
+                "columns": [
+                  {
+                    "parameters": [],
+                    "type": "function"
+                  }
+                ],
+                "groupBy": [
+                  {
+                    "property": {
+                      "type": "string"
+                    },
+                    "type": "groupBy"
+                  }
+                ],
+                "limit": 50
+              }
+            }
+          },
+          "regex": "",
+          "regexApplyTo": "value",
+          "sort": "disabled",
+          "definition": "SELECT\r\n    league_name AS __text,\r\n    league_id AS __value\r\nFROM poe_currency_history\r\nWHERE game = '$game'\r\nGROUP BY league_id, league_name\r\nORDER BY MAX(fetched_at) DESC;",
+          "options": [],
+          "multi": false,
+          "includeAll": false,
+          "allowCustomValue": true
+        }
+      }
+    ],
+    "preferences": {
+      "layout": {
+        "kind": "GridLayout",
+        "spec": {
+          "items": []
+        }
+      }
+    }
+  }
+}
