@@ -17,9 +17,11 @@ print("Running INITIAL fetch...", file=sys.stderr)
 
 try:
     create_table_if_not_exists()
-    fetch_all_games()
 
-    print("Initial fetch completed successfully!", file=sys.stderr)
+    if fetch_all_games():
+        print('Initial fetch completed successfully!', file=sys.stderr)
+    else:
+        print('Initial fetch completed with errors.', file=sys.stderr)
 
 except Exception as e:
 

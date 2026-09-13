@@ -6,7 +6,7 @@ providers:
     folder: PoE Tracker
     type: file
     disableDeletion: false
-    editable: true
+    allowUiUpdates: true
 
     options:
       path: /var/lib/grafana/dashboards

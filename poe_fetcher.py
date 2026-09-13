@@ -1,8 +1,10 @@
 import requests
 import sys
+import traceback
+
 from datetime import datetime
 from poe_database import get_connection
-from poe_db_config import POE_GAMES, POE_REQUEST_HEADERS, get_currency_url, get_leagues_url
+from poe_db_config import (POE_GAMES, POE_REQUEST_HEADERS, get_currency_url, get_leagues_url)
 
 def get_current_league(game):
     response = requests.get(
@@ -119,5 +121,20 @@ def fetch_and_store_currency(game):
     print(f"Successfully inserted {inserted} {game} currencies at {datetime.now()}", file=sys.stderr)
 
 def fetch_all_games():
+    success = True
+
     for game in POE_GAMES:
-        fetch_and_store_currency(game)
+        try:
+            fetch_and_store_currency(game)
+
+        except Exception as e:
+            success = False
+
+            print(
+                f'ERROR fetching {game}: {e}',
+                file=sys.stderr
+            )
+
+            traceback.print_exc(file=sys.stderr)
+
+    return success
